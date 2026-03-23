@@ -1,121 +1,115 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useState } from "react";
+import "./App.css";
+import Header from "./Components/Header";
+import axios from "axios";
+import ProductCard from "./Components/ProductCard";
+import ProductModel from "./Components/ProductModel";
+import { Routes, Route } from "react-router-dom";
+import Cart from "./pages/Cart";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [cart, setCart] = useState([]);
+
+  useEffect(() => {
+    async function fetchProduct() {
+      try {
+        const response = await axios("https://fakestoreapi.com/products");
+        console.log(response.data);
+        setProducts(response.data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProduct();
+  }, []);
+
+  function closeModal() {
+    setSelectedProduct(null);
+  }
+
+  const addToCart = (product) => {
+    setCart((prev) => {
+      const existing = prev.find((item) => item.id === product.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.id === product.id ? { ...item, qty: item.qty + 1 } : item,
+        );
+      }
+      return [...prev, { ...product, qty: 1 }];
+    });
+    setSelectedProduct(null);
+  };
+
+  const changeQty = (productId, delta) => {
+    setCart((prev) =>
+      prev
+        .map((item) =>
+          item.id === productId
+            ? { ...item, qty: Math.max(1, item.qty + delta) }
+            : item,
+        )
+        .filter((item) => item.qty > 0),
+    );
+  };
+
+  // function addToCart(product) {
+  //   setCart([...cart, product]);
+  //   closeModal();
+  // }
+  function openModel(product) {
+    setSelectedProduct(product);
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div>
+      <Header cartCount={cart.length} />
 
-      <div className="ticks"></div>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            loading ? (
+              <p className="message">Loading products....</p>
+            ) : (
+              <div className="product-grid">
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    openModel={openModel}
+                  />
+                ))}
+              </div>
+            )
+          }
+        />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <Route
+          path="/cart"
+          element={
+            <Cart
+              product={cart}
+              onIncrement={(id) => changeQty(id, 1)}
+              onDecrement={(id) => changeQty(id, -1)}
+            />
+          }
+        />
+      </Routes>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {selectedProduct && (
+        <ProductModel
+          product={selectedProduct}
+          closeModal={closeModal}
+          addToCart={addToCart}
+        />
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
