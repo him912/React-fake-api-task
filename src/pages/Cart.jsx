@@ -18,22 +18,35 @@ function Cart({ product = [], onIncrement, onDecrement }) {
   return (
     <div class="main-summary">
       <div class="summary-grid">
-        {product.map((item) => (
-          <CardSummary
-            key={item.id}
-            name={item.title}
-            qty={item.qty}
-            image={item.image}
-            price={item.price}
-            onIncrement={() => onIncrement(item.id)}
-            onDecrement={() => onDecrement(item.id)}
-          />
-        ))}
+        {product.length === 0 ? (
+          <div className="empty-cart">
+            <h2>Your Cart is Empty 🛒</h2>
+            <p>Add some products to get started</p>
+          </div>
+        ) : (
+          product.map((item) => (
+            <CardSummary
+              key={item.id}
+              name={item.title}
+              qty={item.qty}
+              image={item.image}
+              price={item.price}
+              onIncrement={() => onIncrement(item.id)}
+              onDecrement={() => onDecrement(item.id)}
+            />
+          ))
+        )}
       </div>
 
-      <div class="delivery-box">
+      <div className="delivery-box">
+        <div className="delivery-text">
+          Your order is eligible for FREE Delivery 🚚
+        </div>
+
         <h3>Total Items: {totalItems}</h3>
-        <h3>Total Value: Rs:{totalValue.toFixed(2)}</h3>
+
+        <h3 className="total-value">Total Value: ₹{totalValue.toFixed(2)}</h3>
+
         <button className="buy-btn">Proceed to Buy</button>
       </div>
     </div>

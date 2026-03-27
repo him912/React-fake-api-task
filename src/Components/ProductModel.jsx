@@ -19,7 +19,7 @@ function ProductModel({ product, closeModal, addToCart }) {
           {product.category}
         </p>
         <p>
-          <strong>Price:</strong> {Math.round(product.price * 85)}
+          <strong>Price:</strong> {Math.round(product.price * 5)}
         </p>
 
         <p className="description">{product.description}</p>

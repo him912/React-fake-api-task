@@ -7,7 +7,7 @@ function CardSummary({ name, qty, image, price, onIncrement, onDecrement }) {
     <div className="cart-Container">
       {image && <img src={image} alt={name} className="summary-image" />}
 
-      <section>
+      <section class="cart-section2">
         <h2>{name}</h2>
         <br />
         <p>Price: Rs {price?.toFixed(2) ?? "0.00"}</p>
